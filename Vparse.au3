@@ -1,104 +1,198 @@
+#Region ;**** Directives created by AutoIt3Wrapper_GUI ****
+#AutoIt3Wrapper_Res_Description=Vparse application to process eCFR files
+#AutoIt3Wrapper_Res_Fileversion=0.0.1.2
+#AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
+#AutoIt3Wrapper_Res_LegalCopyright=U.S. GPO
+#AutoIt3Wrapper_UseX64=y
+#AutoIt3Wrapper_Res_Field=OriginalFilename|Vparse.exe
+#AutoIt3Wrapper_Res_ProductVersion=0.1
+#AutoIt3Wrapper_Res_Field=ProductName|Vparse
+#AutoIt3Wrapper_Res_Language=1033
+#AutoIt3Wrapper_Run_Tidy=y
+#AutoIt3Wrapper_Run_Au3Stripper=y
+#AutoIt3Wrapper_icon=vparse_icon.ico
+#EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 ;~ #include <Dbug.au3>
 #include <Array.au3>
+#include <Date.au3>
 #include <GUIConstantsEx.au3>
 #include <FileConstants.au3>
-#include <EditConstants.au3>
-#include <GuiListView.au3>
+; #include <EditConstants.au3>
 #include <ColorConstants.au3>
 #include <WindowsConstants.au3>
 #include <GUIConstants.au3>
 #include <FontConstants.au3>
 #include <File.au3>
+#include <Color.au3>
+#include <GuiRichEdit.au3>
+#include <GuiTab.au3>
 
-Opt("GUIOnEventMode", 1)
 
-Global $sInFileDirDefault = "\\alpha3\E\RiosBay\Ins"
-Global $sOutFileDirDefault = "\\alpha3\E\RiosBay\Outs"
+Global $sInFileDirDefault = "\\hqnapdcm0734\OFR\e_cfr"
+Global $sOutFileDirDefault = "\\hqnapdcm0734\OFR\e_cfr\Apps\ECFRDATE"
 
 Global $sInFileDir, $sOutFileDir
 
-Dim $hGUI, $hTab, $hInFolder, $hInFile, $hInFileLabel, $hDefault_Button, $hApply_Button, $hChooseFileButton, $hInRemarksList, _
+Global Const $COLOR_GPOTEAL = 0x3b80a1
+
+Dim $hGUI, $hTab, $hInFolder, $hInTitle, $hInTitleLabel, $hInVolume, $hInVolumeLabel, $hDefault_Button, $hApply_Button, $hLoadFileButton, $hInRemarksList, _
 		$hOutLabel, $hOut, $hOutFile, $hCreateAllOutsButton
 
 fuMainGUI()
 ; create GUI and tabs
 Func fuMainGUI()
 
-	$hGUI = GUICreate("Vparse v" & _GetVersion(), 600, 500, Default, Default, BitOR($GUI_SS_DEFAULT_GUI, $WS_MAXIMIZEBOX, $WS_SIZEBOX))
-	GUISetOnEvent($GUI_EVENT_CLOSE, "On_Close") ; Run this function when the main GUI [X] is clicked
+	$hGUI = GUICreate("Vparse v" & _GetVersion(), 650, 600, Default, Default)
+	GUISetState()
 
-	$hTab = GUICtrlCreateTab(5, 5, 592, 490)
-	GUICtrlSetResizing($hTab, $GUI_DOCKBORDERS)
+	$hTab = _GUICtrlTab_Create($hGUI, 5, 5, 642, 590)
+
+	_GUICtrlTab_InsertItem($hTab, 0, "Main")
+	_GUICtrlTab_InsertItem($hTab, 1, "Settings")
+
 	; tab 0
-	GUICtrlCreateTabItem("Main")
 
-	$hInFileLabel = GUICtrlCreateLabel("'In' File Location:", 14, 37)
-	$hInFile = GUICtrlCreateInput("", 134, 35, 360, 20, $ES_READONLY)
-	GUICtrlSetBkColor($hInFile, 0xFFFFFF)
-	$hChooseFileButton = GUICtrlCreateButton("CHOOSE", 515, 35, 70, 20)
-	GUICtrlSetOnEvent(-1, "On_Click") ; Call a common button function
-	$hOutLabel = GUICtrlCreateLabel("Number of Outs:", 14, 57)
-	GUISetFont(10, $FW_BOLD)
-	$hOut = GUICtrlCreateLabel("", 134, 57, 140, 22)
+	GUISetFont(15, $FW_NORMAL)
+	$hInTitleLabel = GUICtrlCreateLabel("Title:", 17, 40)
+	GUICtrlSetBkColor($hInTitleLabel, $GUI_BKCOLOR_TRANSPARENT)
+	$hInTitle = GUICtrlCreateInput("1", 62, 37, 60, 33, BitOR($ES_NUMBER, $ES_CENTER))
+	$hTitleUpDown = GUICtrlCreateUpdown($hInTitle)
+	GUICtrlSetLimit(-1, 50, 1)
+
+	$hInVolumeLabel = GUICtrlCreateLabel("Volume:", 125, 40)
+	GUICtrlSetBkColor($hInVolumeLabel, $GUI_BKCOLOR_TRANSPARENT)
+	$hInVolume = GUICtrlCreateInput("1", 200, 37, 60, 33, BitOR($ES_NUMBER, $ES_CENTER))
+	$hVolumeUpDown = GUICtrlCreateUpdown($hInVolume)
+	GUICtrlSetLimit(-1, 37, 1)
+
+	$hOutLabel = GUICtrlCreateLabel("eCFR Date:", 270, 40)
+	GUICtrlSetBkColor($hOutLabel, $GUI_BKCOLOR_TRANSPARENT)
+	GUISetFont(15, $FW_BOLD)
+	$hOut = GUICtrlCreateDate("", 380, 37, 140, 33, $DTS_SHORTDATEFORMAT)
+
+	$hLoadFileButton = GUICtrlCreateButton("LOAD", 550, 37, 80, 33)
+	GUICtrlSetBkColor($hLoadFileButton, $COLOR_GPOTEAL)
+	GUICtrlSetColor($hLoadFileButton, $COLOR_WHITE)
 	GUISetFont(8.5, $FW_NORMAL)
 
-	GUICtrlSetResizing($hInFileLabel, $GUI_DOCKMENUBAR)
-	GUICtrlSetResizing($hInFile, $GUI_DOCKMENUBAR)
-	GUICtrlSetResizing($hChooseFileButton, $GUI_DOCKMENUBAR)
-	GUICtrlSetResizing($hOutLabel, $GUI_DOCKMENUBAR)
-	GUICtrlSetResizing($hOut, $GUI_DOCKMENUBAR)
 
-	$hInRemarksList = GUICtrlCreateListView("", 14, 80, 573, 380, BitOR($LVS_SHOWSELALWAYS, $LVS_REPORT, $LVS_NOSORTHEADER, $LVS_NOLABELWRAP))
-	GUICtrlSetState($hInRemarksList, $GUI_DISABLE)
+	$hInRemarksList = _GUICtrlRichEdit_Create($hGUI, "", 14, 80, 623, 475, BitOR($ES_MULTILINE, $WS_VSCROLL, $WS_HSCROLL))
 
-	GUICtrlSetResizing($hInRemarksList, $GUI_DOCKBORDERS)
-	_GUICtrlListView_SetExtendedListViewStyle($hInRemarksList, BitOR($LVS_EX_FULLROWSELECT, $LVS_EX_GRIDLINES))
-	_GUICtrlListView_AddColumn($hInRemarksList, "Outs", @DesktopWidth)
-
-	$hCreateAllOutsButton = GUICtrlCreateButton("SPLIT && SAVE Outs", 245, 465, 120, 22)
-	GUICtrlSetOnEvent(-1, "On_Click") ; Call a common button function
+	$hCreateAllOutsButton = GUICtrlCreateButton("PROCESS FILES", 270, 565, 120, 22)
+	GUICtrlSetBkColor($hCreateAllOutsButton, $COLOR_GPOTEAL)
+	GUICtrlSetColor($hCreateAllOutsButton, $COLOR_WHITE)
 	GUICtrlSetState($hCreateAllOutsButton, $GUI_DISABLE)
-	GUICtrlSetResizing($hCreateAllOutsButton, $GUI_DOCKSTATEBAR)
 
 	; tab 1
-	GUICtrlCreateTabItem("Settings")
 
-	GUICtrlCreateLabel("Default In Directory", 35, 45)
-	GUICtrlSetResizing(-1, $GUI_DOCKMENUBAR)
+	$defDir_label = GUICtrlCreateLabel("Default Directory", 35, 45)
+	GUICtrlSetBkColor($defDir_label, $GUI_BKCOLOR_TRANSPARENT)
+
 	$hInFolder = GUICtrlCreateInput("", 35, 65, 320, 20)
-	GUICtrlSetResizing(-1, $GUI_DOCKMENUBAR)
-	$sInFileDir = fuGetRegValsForSettings("In", $sInFileDirDefault)
+	$sInFileDir = fuGetRegValsForSettings("Dir", $sInFileDirDefault)
 	GUICtrlSetData($hInFolder, $sInFileDir)
 
-	GUICtrlCreateLabel("Directory to Save Out Files", 35, 105)
-	GUICtrlSetResizing(-1, $GUI_DOCKMENUBAR)
+	$efFileLoc_label = GUICtrlCreateLabel("Effective Date File Location", 35, 105)
+	GUICtrlSetBkColor($efFileLoc_label, $GUI_BKCOLOR_TRANSPARENT)
 	$hOutFile = GUICtrlCreateInput("", 35, 125, 320, 20)
-	GUICtrlSetResizing(-1, $GUI_DOCKMENUBAR)
-	$sOutFileDir = fuGetRegValsForSettings("Out", $sOutFileDirDefault)
+	$sOutFileDir = fuGetRegValsForSettings("Date", $sOutFileDirDefault)
 	GUICtrlSetData($hOutFile, $sOutFileDir)
 
 	$hDefault_Button = GUICtrlCreateButton("Default", 400, 225, 75)
-	GUICtrlSetOnEvent(-1, "On_Click") ; Call a common button function
-	GUICtrlSetResizing(-1, $GUI_DOCKMENUBAR)
+	GUICtrlSetBkColor($hDefault_Button, $COLOR_GPOTEAL)
+	GUICtrlSetColor($hDefault_Button, $COLOR_WHITE)
 	$hApply_Button = GUICtrlCreateButton("Apply", 485, 225, 75)
-	GUICtrlSetOnEvent(-1, "On_Click") ; Call a common button function
-	GUICtrlSetResizing(-1, $GUI_DOCKMENUBAR)
+	GUICtrlSetBkColor($hApply_Button, $COLOR_GPOTEAL)
+	GUICtrlSetColor($hApply_Button, $COLOR_WHITE)
 	GUICtrlCreateTabItem("") ; end tabitem definition
+
+	GUICtrlSetState($defDir_label, $GUI_HIDE)
+	GUICtrlSetState($hInFolder, $GUI_HIDE)
+	GUICtrlSetState($efFileLoc_label, $GUI_HIDE)
+	GUICtrlSetState($hOutFile, $GUI_HIDE)
+	GUICtrlSetState($hDefault_Button, $GUI_HIDE)
+	GUICtrlSetState($hApply_Button, $GUI_HIDE)
 
 	GUISetState()
 
+	; This is the current active tab
+	$iLastTab = 0
+
 	; Run the GUI until the dialog is closed
 	While 1
-		Sleep(10)
+		Switch GUIGetMsg()
+			Case $GUI_EVENT_CLOSE
+				GUIDelete()
+				Exit
+
+			Case $hLoadFileButton
+				If fuLoadFile() > 0 Then
+					GUICtrlSetState($hCreateAllOutsButton, $GUI_ENABLE)
+				EndIf
+
+			Case $hDefault_Button
+				$sInFileDir = $sInFileDirDefault
+				GUICtrlSetData($hInFolder, $sInFileDir)
+				$sOutFileDir = $sOutFileDirDefault
+				GUICtrlSetData($hOutFile, $sOutFileDir)
+				ContinueCase
+
+			Case $hApply_Button
+				fuApplySettingsValue($hInFolder, "Dir")
+				fuApplySettingsValue($hOutFile, "Date")
+
+			Case $hCreateAllOutsButton
+				MsgBox($MB_ICONINFORMATION + $MB_OK, "Beta Version", "Sorry, this functionality has not been implemented yet!")
+		EndSwitch
+
+		; Check which Tab is active
+		$iCurrTab = _GUICtrlTab_GetCurFocus($hTab)
+		; If the Tab has changed
+		If $iCurrTab <> $iLastTab Then
+			; Store the value for future comparisons
+			$iLastTab = $iCurrTab
+			; Show/Hide controls as required
+			Switch $iCurrTab
+				Case 0
+					GUICtrlSetState($defDir_label, $GUI_HIDE)
+					GUICtrlSetState($hInFolder, $GUI_HIDE)
+					GUICtrlSetState($efFileLoc_label, $GUI_HIDE)
+					GUICtrlSetState($hOutFile, $GUI_HIDE)
+					GUICtrlSetState($hDefault_Button, $GUI_HIDE)
+					GUICtrlSetState($hApply_Button, $GUI_HIDE)
+
+					GUICtrlSetState($hInTitleLabel, $GUI_SHOW)
+					GUICtrlSetState($hInTitle, $GUI_SHOW)
+					GUICtrlSetState($hTitleUpDown, $GUI_SHOW)
+					GUICtrlSetState($hInVolumeLabel, $GUI_SHOW)
+					GUICtrlSetState($hInVolume, $GUI_SHOW)
+					GUICtrlSetState($hVolumeUpDown, $GUI_SHOW)
+					GUICtrlSetState($hOutLabel, $GUI_SHOW)
+					GUICtrlSetState($hOut, $GUI_SHOW)
+					GUICtrlSetState($hLoadFileButton, $GUI_SHOW)
+					ControlShow($hGUI, "", $hInRemarksList)
+				Case 1
+					GUICtrlSetState($hInTitleLabel, $GUI_HIDE)
+					GUICtrlSetState($hInTitle, $GUI_HIDE)
+					GUICtrlSetState($hTitleUpDown, $GUI_HIDE)
+					GUICtrlSetState($hInVolumeLabel, $GUI_HIDE)
+					GUICtrlSetState($hInVolume, $GUI_HIDE)
+					GUICtrlSetState($hVolumeUpDown, $GUI_HIDE)
+					GUICtrlSetState($hOutLabel, $GUI_HIDE)
+					GUICtrlSetState($hOut, $GUI_HIDE)
+					GUICtrlSetState($hLoadFileButton, $GUI_HIDE)
+					ControlHide($hGUI, "", $hInRemarksList)
+
+					GUICtrlSetState($defDir_label, $GUI_SHOW)
+					GUICtrlSetState($hInFolder, $GUI_SHOW)
+					GUICtrlSetState($efFileLoc_label, $GUI_SHOW)
+					GUICtrlSetState($hOutFile, $GUI_SHOW)
+					GUICtrlSetState($hDefault_Button, $GUI_SHOW)
+					GUICtrlSetState($hApply_Button, $GUI_SHOW)
+			EndSwitch
+		EndIf
 	WEnd
 EndFunc   ;==>fuMainGUI
-
-Func On_Close()
-	Switch @GUI_WinHandle ; See which GUI sent the CLOSE message
-		Case $hGUI
-			Exit ; If it was this GUI - we exit <<<<<<<<<<<<<<<
-	EndSwitch
-EndFunc   ;==>On_Close
 
 ; function to get input or output values from registry if they exist
 Func fuGetRegValsForSettings($sFolder, $DefaultFolder)
@@ -137,80 +231,44 @@ Func _GetVersion()
 	EndIf
 EndFunc   ;==>_GetVersion
 
-Func On_Click()
-	Switch @GUI_CtrlId ; See wich item sent a message
-		Case $hChooseFileButton
-			Local $sFileOpenDialog = FileOpenDialog("Select In File", $sInFileDir & "\", "In (*.In)", $FD_FILEMUSTEXIST + $FD_PATHMUSTEXIST, "", $hGUI)
-			GUICtrlSetData($hInFile, $sFileOpenDialog)
-;			Local $aInRemarksData = fuReadInDoc($sFileOpenDialog)
-;			If UBound($aInRemarksData) > 0 Then fuPopulateListView($aInRemarksData)
-		Case $hDefault_Button
-			$sInFileDir = $sInFileDirDefault
-			GUICtrlSetData($hInFolder, $sInFileDir)
-			$sOutFileDir = $sOutFileDirDefault
-			GUICtrlSetData($hOutFile, $sOutFileDir)
-			ContinueCase
-		Case $hApply_Button
-			fuApplySettingsValue($hInFolder, "In")
-			fuApplySettingsValue($hOutFile, "Out")
-		Case $hCreateAllOutsButton
-			Local $aAllRemarks = _GUICtrlListView_CreateArray($hInRemarksList)
-;			fuCreateOuts($aAllRemarks)
-	EndSwitch
-EndFunc   ;==>On_Click
+Func fuLoadFile()
+	GUICtrlSetBkColor($hInTitle, $GUI_BKCOLOR_TRANSPARENT)
+	GUICtrlSetBkColor($hInVolume, $GUI_BKCOLOR_TRANSPARENT)
+	_GUICtrlRichEdit_SetText($hInRemarksList, "")
 
-; #FUNCTION# ====================================================================================================================
-; Name ..........: _GUICtrlListView_CreateArray
-; Description ...: Creates a 2-dimensional array from a listview.
-; Syntax ........: _GUICtrlListView_CreateArray($hListView[, $sDelimeter = '|'])
-; Parameters ....: $hListView           - Control ID/Handle to the control
-;                  $sDelimeter          - [optional] One or more characters to use as delimiters (case sensitive). Default is '|'.
-;				   $bAllItems			- [optional]
-; Return values .: Success - The array returned is two-dimensional and is made up of the following:
-;                                $aArray[0][0] = Number of rows
-;                                $aArray[0][1] = Number of columns
-;                                $aArray[0][2] = Delimited string of the column name(s) e.g. Column 1|Column 2|Column 3|Column nth
+	Local $iTitleNum = GUICtrlRead($hInTitle)
+	Local $iVolumeNum = GUICtrlRead($hInVolume)
+	If $iTitleNum < 1 Or $iTitleNum > 50 Then
+		GUICtrlSetBkColor($hInTitle, $COLOR_RED)
+		MsgBox($MB_ICONERROR, "Title Number Out of Range", "Title Number Should Be Between 1 and 50 !!!")
+		Return 0
+	EndIf
+	If $iVolumeNum < 1 Or $iVolumeNum > 37 Then
+		GUICtrlSetBkColor($hInVolume, $COLOR_RED)
+		MsgBox($MB_ICONERROR, "Volume Number Out of Range", "Volume Number Should Be Between 1 and 37 !!!")
+		Return 0
+	EndIf
 
-;                                $aArray[1][0] = 1st row, 1st column
-;                                $aArray[1][1] = 1st row, 2nd column
-;                                $aArray[1][2] = 1st row, 3rd column
-;                                $aArray[n][0] = nth row, 1st column
-;                                $aArray[n][1] = nth row, 2nd column
-;                                $aArray[n][2] = nth row, 3rd column
-; Author ........: guinness, sjohnson
-; Remarks .......: GUICtrlListView.au3 should be included.
-; ===============================================================================================================================
-Func _GUICtrlListView_CreateArray($hListView, $sDelimeter = '|', $bAllItems = True)
-	Local $iColumnCount = _GUICtrlListView_GetColumnCount($hListView), $iDim = 0, $iItemCount = 0
-	Local $aiListIndices[1]
-	$iItemCount = ($bAllItems) ? (_GUICtrlListView_GetItemCount($hListView)) : (_GUICtrlListView_GetSelectedCount($hListView))
-	If $bAllItems Then
-		$aiListIndices[0] = $iItemCount
-		For $a = 0 To $iItemCount - 1
-			_ArrayAdd($aiListIndices, $a)
-		Next
+	Local $aEffDate = FileGetTime($sOutFileDir, $FT_MODIFIED)
+	GUICtrlSetData($hOut, $aEffDate[0] & "/" & $aEffDate[1] & "/" & $aEffDate[2])
+
+	Local $sFilePath = $sInFileDir & '\' & Number($iTitleNum) & '\' & Number($iTitleNum) & 'V' & Number($iVolumeNum) & ".TXT"
+	If FileExists($sFilePath) Then
+		Local $hFileOpen = FileOpen($sFilePath, $FO_READ)
+		Local $sFileRead = FileRead($hFileOpen)
+		FileClose($hFileOpen)
+		ControlHide($hGUI, "", $hInRemarksList)
+		_GUICtrlRichEdit_SetText($hInRemarksList, $sFileRead)
+		ControlShow($hGUI, "", $hInRemarksList)
+
+		_GUICtrlRichEdit_SetSel($hInRemarksList, _GUICtrlRichEdit_FindText($hInRemarksList, "<AMDDATE>") + 9, _GUICtrlRichEdit_FindText($hInRemarksList, "<FMTR>") - 1)
+		_GUICtrlRichEdit_SetCharBkColor($hInRemarksList, Dec('8888FF'))
+		_GUICtrlRichEdit_SetSel($hInRemarksList, _GUICtrlRichEdit_FindText($hInRemarksList, "<TITLENUM>") + 10, _GUICtrlRichEdit_FindText($hInRemarksList, "<SUBJECT>") - 1)
+		_GUICtrlRichEdit_SetCharBkColor($hInRemarksList, Dec('8888FF'))
+		_GUICtrlRichEdit_Deselect($hInRemarksList)
+		Return 1
 	Else
-		$aiListIndices = _GUICtrlListView_GetSelectedIndices($hListView, True)
+		MsgBox($MB_ICONERROR, "Error Reading File", "Selected Title/Volume File is Not Ready for Parsing!")
+		Return 0
 	EndIf
-
-	If $iColumnCount < 3 Then
-		$iDim = 3 - $iColumnCount
-	EndIf
-	If $sDelimeter = Default Then
-		$sDelimeter = '|'
-	EndIf
-
-	Local $aColumns = 0, $aReturn[$iItemCount + 1][$iColumnCount + $iDim] = [[$iItemCount, $iColumnCount, '']]
-	For $i = 0 To $iColumnCount - 1
-		$aColumns = _GUICtrlListView_GetColumn($hListView, $i)
-		$aReturn[0][2] &= $aColumns[5] & $sDelimeter
-	Next
-	$aReturn[0][2] = StringTrimRight($aReturn[0][2], StringLen($sDelimeter))
-
-	For $i = 1 To $iItemCount
-		For $j = 0 To $iColumnCount - 1
-			$aReturn[$i][$j] = _GUICtrlListView_GetItemText($hListView, $aiListIndices[$i], $j)
-		Next
-	Next
-	Return SetError(Number($aReturn[0][0] = 0), 0, $aReturn)
-EndFunc   ;==>_GUICtrlListView_CreateArray
+EndFunc   ;==>fuLoadFile
