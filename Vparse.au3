@@ -1,6 +1,6 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Res_Description=Vparse application to process eCFR files
-#AutoIt3Wrapper_Res_Fileversion=0.0.1.2
+#AutoIt3Wrapper_Res_Fileversion=0.0.1.3
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=U.S. GPO
 #AutoIt3Wrapper_UseX64=y
@@ -12,12 +12,10 @@
 #AutoIt3Wrapper_Run_Au3Stripper=y
 #AutoIt3Wrapper_icon=vparse_icon.ico
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
-;~ #include <Dbug.au3>
 #include <Array.au3>
 #include <Date.au3>
 #include <GUIConstantsEx.au3>
 #include <FileConstants.au3>
-; #include <EditConstants.au3>
 #include <ColorConstants.au3>
 #include <WindowsConstants.au3>
 #include <GUIConstants.au3>
@@ -306,9 +304,11 @@ Func fuProcessFiles()
 	GUICtrlSetData($idInVolume, "1")
 	GUICtrlSetData($idInTitle, "1")
 	GUICtrlSetData($idOut, $aDfltEffDate[0] & "/" & $aDfltEffDate[1] & "/" & $aDfltEffDate[2])
+	ControlHide($hGUI, "", $idInRemarksList)
 	_GUICtrlRichEdit_SetText($idInRemarksList, "")
+	ControlShow($hGUI, "", $idInRemarksList)
 	MsgBox($MB_ICONINFORMATION + $MB_OK, "File Operations Status", "No Ext File: " & $bNoExtFileStatus & @CRLF & "TXT File: " & $bTxtFileStatus & @CRLF & "Doc File: " & $bDocFileStatus)
 
-	Return
+	Return 1
 
 EndFunc   ;==>fuProcessFiles
