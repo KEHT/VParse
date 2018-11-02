@@ -35,8 +35,8 @@ Global $sInFileDir, $sOutFileDir
 
 Global Const $COLOR_GPOTEAL = 0x3b80a1
 
-Dim $hGUI, $hTab, $hInFolder, $hInTitle, $hInTitleLabel, $hInVolume, $hInVolumeLabel, $hDefault_Button, $hApply_Button, $hLoadFileButton, $hInRemarksList, _
-		$hOutLabel, $hOut, $hOutFile, $hCreateAllOutsButton
+Dim $hGUI, $idTab, $idInFolder, $idInTitle, $idInTitleLabel, $idInVolume, $idInVolumeLabel, $idDefault_Button, $idApply_Button, $idLoadFileButton, $idInRemarksList, _
+		$idOutLabel, $idOut, $idOutFile, $idCreateAllOutsButton, $idTitleUpDown, $idVolumeUpDown, $id_defDir_label, $idEfFileLoc_label
 
 fuMainGUI()
 ; create GUI and tabs
@@ -45,73 +45,73 @@ Func fuMainGUI()
 	$hGUI = GUICreate("Vparse v" & _GetVersion(), 650, 600, Default, Default)
 	GUISetState()
 
-	$hTab = _GUICtrlTab_Create($hGUI, 5, 5, 642, 590)
+	$idTab = _GUICtrlTab_Create($hGUI, 5, 5, 642, 590)
 
-	_GUICtrlTab_InsertItem($hTab, 0, "Main")
-	_GUICtrlTab_InsertItem($hTab, 1, "Settings")
+	_GUICtrlTab_InsertItem($idTab, 0, "Main")
+	_GUICtrlTab_InsertItem($idTab, 1, "Settings")
 
 	; tab 0
 
 	GUISetFont(15, $FW_NORMAL)
-	$hInTitleLabel = GUICtrlCreateLabel("Title:", 17, 40)
-	GUICtrlSetBkColor($hInTitleLabel, $GUI_BKCOLOR_TRANSPARENT)
-	$hInTitle = GUICtrlCreateInput("1", 62, 37, 60, 33, BitOR($ES_NUMBER, $ES_CENTER))
-	$hTitleUpDown = GUICtrlCreateUpdown($hInTitle)
+	$idInTitleLabel = GUICtrlCreateLabel("Title:", 17, 40)
+	GUICtrlSetBkColor($idInTitleLabel, $GUI_BKCOLOR_TRANSPARENT)
+	$idInTitle = GUICtrlCreateInput("1", 62, 37, 60, 33, BitOR($ES_NUMBER, $ES_CENTER))
+	$idTitleUpDown = GUICtrlCreateUpdown($idInTitle)
 	GUICtrlSetLimit(-1, 50, 1)
 
-	$hInVolumeLabel = GUICtrlCreateLabel("Volume:", 125, 40)
-	GUICtrlSetBkColor($hInVolumeLabel, $GUI_BKCOLOR_TRANSPARENT)
-	$hInVolume = GUICtrlCreateInput("1", 200, 37, 60, 33, BitOR($ES_NUMBER, $ES_CENTER))
-	$hVolumeUpDown = GUICtrlCreateUpdown($hInVolume)
+	$idInVolumeLabel = GUICtrlCreateLabel("Volume:", 125, 40)
+	GUICtrlSetBkColor($idInVolumeLabel, $GUI_BKCOLOR_TRANSPARENT)
+	$idInVolume = GUICtrlCreateInput("1", 200, 37, 60, 33, BitOR($ES_NUMBER, $ES_CENTER))
+	$idVolumeUpDown = GUICtrlCreateUpdown($idInVolume)
 	GUICtrlSetLimit(-1, 37, 1)
 
-	$hOutLabel = GUICtrlCreateLabel("eCFR Date:", 270, 40)
-	GUICtrlSetBkColor($hOutLabel, $GUI_BKCOLOR_TRANSPARENT)
+	$idOutLabel = GUICtrlCreateLabel("eCFR Date:", 270, 40)
+	GUICtrlSetBkColor($idOutLabel, $GUI_BKCOLOR_TRANSPARENT)
 	GUISetFont(15, $FW_BOLD)
-	$hOut = GUICtrlCreateDate("", 380, 37, 140, 33, $DTS_SHORTDATEFORMAT)
+	$idOut = GUICtrlCreateDate("", 380, 37, 140, 33, $DTS_SHORTDATEFORMAT)
 
-	$hLoadFileButton = GUICtrlCreateButton("LOAD", 550, 37, 80, 33)
-	GUICtrlSetBkColor($hLoadFileButton, $COLOR_GPOTEAL)
-	GUICtrlSetColor($hLoadFileButton, $COLOR_WHITE)
+	$idLoadFileButton = GUICtrlCreateButton("LOAD", 550, 37, 80, 33)
+	GUICtrlSetBkColor($idLoadFileButton, $COLOR_GPOTEAL)
+	GUICtrlSetColor($idLoadFileButton, $COLOR_WHITE)
 	GUISetFont(8.5, $FW_NORMAL)
 
 
-	$hInRemarksList = _GUICtrlRichEdit_Create($hGUI, "", 14, 80, 623, 475, BitOR($ES_MULTILINE, $WS_VSCROLL, $WS_HSCROLL))
+	$idInRemarksList = _GUICtrlRichEdit_Create($hGUI, "", 14, 80, 623, 475, BitOR($ES_MULTILINE, $WS_VSCROLL, $WS_HSCROLL))
 
-	$hCreateAllOutsButton = GUICtrlCreateButton("PROCESS FILES", 270, 565, 120, 22)
-	GUICtrlSetBkColor($hCreateAllOutsButton, $COLOR_GPOTEAL)
-	GUICtrlSetColor($hCreateAllOutsButton, $COLOR_WHITE)
-	GUICtrlSetState($hCreateAllOutsButton, $GUI_DISABLE)
+	$idCreateAllOutsButton = GUICtrlCreateButton("PROCESS FILES", 270, 565, 120, 22)
+	GUICtrlSetBkColor($idCreateAllOutsButton, $COLOR_GPOTEAL)
+	GUICtrlSetColor($idCreateAllOutsButton, $COLOR_WHITE)
+	GUICtrlSetState($idCreateAllOutsButton, $GUI_DISABLE)
 
 	; tab 1
 
-	$defDir_label = GUICtrlCreateLabel("Default Directory", 35, 45)
-	GUICtrlSetBkColor($defDir_label, $GUI_BKCOLOR_TRANSPARENT)
+	$id_defDir_label = GUICtrlCreateLabel("Default Directory", 35, 45)
+	GUICtrlSetBkColor($id_defDir_label, $GUI_BKCOLOR_TRANSPARENT)
 
-	$hInFolder = GUICtrlCreateInput("", 35, 65, 320, 20)
+	$idInFolder = GUICtrlCreateInput("", 35, 65, 320, 20)
 	$sInFileDir = fuGetRegValsForSettings("Dir", $sInFileDirDefault)
-	GUICtrlSetData($hInFolder, $sInFileDir)
+	GUICtrlSetData($idInFolder, $sInFileDir)
 
-	$efFileLoc_label = GUICtrlCreateLabel("Effective Date File Location", 35, 105)
-	GUICtrlSetBkColor($efFileLoc_label, $GUI_BKCOLOR_TRANSPARENT)
-	$hOutFile = GUICtrlCreateInput("", 35, 125, 320, 20)
+	$idEfFileLoc_label = GUICtrlCreateLabel("Effective Date File Location", 35, 105)
+	GUICtrlSetBkColor($idEfFileLoc_label, $GUI_BKCOLOR_TRANSPARENT)
+	$idOutFile = GUICtrlCreateInput("", 35, 125, 320, 20)
 	$sOutFileDir = fuGetRegValsForSettings("Date", $sOutFileDirDefault)
-	GUICtrlSetData($hOutFile, $sOutFileDir)
+	GUICtrlSetData($idOutFile, $sOutFileDir)
 
-	$hDefault_Button = GUICtrlCreateButton("Default", 400, 225, 75)
-	GUICtrlSetBkColor($hDefault_Button, $COLOR_GPOTEAL)
-	GUICtrlSetColor($hDefault_Button, $COLOR_WHITE)
-	$hApply_Button = GUICtrlCreateButton("Apply", 485, 225, 75)
-	GUICtrlSetBkColor($hApply_Button, $COLOR_GPOTEAL)
-	GUICtrlSetColor($hApply_Button, $COLOR_WHITE)
+	$idDefault_Button = GUICtrlCreateButton("Default", 400, 225, 75)
+	GUICtrlSetBkColor($idDefault_Button, $COLOR_GPOTEAL)
+	GUICtrlSetColor($idDefault_Button, $COLOR_WHITE)
+	$idApply_Button = GUICtrlCreateButton("Apply", 485, 225, 75)
+	GUICtrlSetBkColor($idApply_Button, $COLOR_GPOTEAL)
+	GUICtrlSetColor($idApply_Button, $COLOR_WHITE)
 	GUICtrlCreateTabItem("") ; end tabitem definition
 
-	GUICtrlSetState($defDir_label, $GUI_HIDE)
-	GUICtrlSetState($hInFolder, $GUI_HIDE)
-	GUICtrlSetState($efFileLoc_label, $GUI_HIDE)
-	GUICtrlSetState($hOutFile, $GUI_HIDE)
-	GUICtrlSetState($hDefault_Button, $GUI_HIDE)
-	GUICtrlSetState($hApply_Button, $GUI_HIDE)
+	GUICtrlSetState($id_defDir_label, $GUI_HIDE)
+	GUICtrlSetState($idInFolder, $GUI_HIDE)
+	GUICtrlSetState($idEfFileLoc_label, $GUI_HIDE)
+	GUICtrlSetState($idOutFile, $GUI_HIDE)
+	GUICtrlSetState($idDefault_Button, $GUI_HIDE)
+	GUICtrlSetState($idApply_Button, $GUI_HIDE)
 
 	GUISetState()
 
@@ -125,28 +125,28 @@ Func fuMainGUI()
 				GUIDelete()
 				Exit
 
-			Case $hLoadFileButton
+			Case $idLoadFileButton
 				If fuLoadFile() > 0 Then
-					GUICtrlSetState($hCreateAllOutsButton, $GUI_ENABLE)
+					GUICtrlSetState($idCreateAllOutsButton, $GUI_ENABLE)
 				EndIf
 
-			Case $hDefault_Button
+			Case $idDefault_Button
 				$sInFileDir = $sInFileDirDefault
-				GUICtrlSetData($hInFolder, $sInFileDir)
+				GUICtrlSetData($idInFolder, $sInFileDir)
 				$sOutFileDir = $sOutFileDirDefault
-				GUICtrlSetData($hOutFile, $sOutFileDir)
+				GUICtrlSetData($idOutFile, $sOutFileDir)
 				ContinueCase
 
-			Case $hApply_Button
-				fuApplySettingsValue($hInFolder, "Dir")
-				fuApplySettingsValue($hOutFile, "Date")
+			Case $idApply_Button
+				fuApplySettingsValue($idInFolder, "Dir")
+				fuApplySettingsValue($idOutFile, "Date")
 
-			Case $hCreateAllOutsButton
-				MsgBox($MB_ICONINFORMATION + $MB_OK, "Beta Version", "Sorry, this functionality has not been implemented yet!")
+			Case $idCreateAllOutsButton
+				fuProcessFiles()
 		EndSwitch
 
 		; Check which Tab is active
-		$iCurrTab = _GUICtrlTab_GetCurFocus($hTab)
+		$iCurrTab = _GUICtrlTab_GetCurFocus($idTab)
 		; If the Tab has changed
 		If $iCurrTab <> $iLastTab Then
 			; Store the value for future comparisons
@@ -154,41 +154,43 @@ Func fuMainGUI()
 			; Show/Hide controls as required
 			Switch $iCurrTab
 				Case 0
-					GUICtrlSetState($defDir_label, $GUI_HIDE)
-					GUICtrlSetState($hInFolder, $GUI_HIDE)
-					GUICtrlSetState($efFileLoc_label, $GUI_HIDE)
-					GUICtrlSetState($hOutFile, $GUI_HIDE)
-					GUICtrlSetState($hDefault_Button, $GUI_HIDE)
-					GUICtrlSetState($hApply_Button, $GUI_HIDE)
+					GUICtrlSetState($id_defDir_label, $GUI_HIDE)
+					GUICtrlSetState($idInFolder, $GUI_HIDE)
+					GUICtrlSetState($idEfFileLoc_label, $GUI_HIDE)
+					GUICtrlSetState($idOutFile, $GUI_HIDE)
+					GUICtrlSetState($idDefault_Button, $GUI_HIDE)
+					GUICtrlSetState($idApply_Button, $GUI_HIDE)
 
-					GUICtrlSetState($hInTitleLabel, $GUI_SHOW)
-					GUICtrlSetState($hInTitle, $GUI_SHOW)
-					GUICtrlSetState($hTitleUpDown, $GUI_SHOW)
-					GUICtrlSetState($hInVolumeLabel, $GUI_SHOW)
-					GUICtrlSetState($hInVolume, $GUI_SHOW)
-					GUICtrlSetState($hVolumeUpDown, $GUI_SHOW)
-					GUICtrlSetState($hOutLabel, $GUI_SHOW)
-					GUICtrlSetState($hOut, $GUI_SHOW)
-					GUICtrlSetState($hLoadFileButton, $GUI_SHOW)
-					ControlShow($hGUI, "", $hInRemarksList)
+					GUICtrlSetState($idInTitleLabel, $GUI_SHOW)
+					GUICtrlSetState($idInTitle, $GUI_SHOW)
+					GUICtrlSetState($idTitleUpDown, $GUI_SHOW)
+					GUICtrlSetState($idInVolumeLabel, $GUI_SHOW)
+					GUICtrlSetState($idInVolume, $GUI_SHOW)
+					GUICtrlSetState($idVolumeUpDown, $GUI_SHOW)
+					GUICtrlSetState($idOutLabel, $GUI_SHOW)
+					GUICtrlSetState($idOut, $GUI_SHOW)
+					GUICtrlSetState($idLoadFileButton, $GUI_SHOW)
+					ControlShow($hGUI, "", $idInRemarksList)
+					GUICtrlSetState($idCreateAllOutsButton, $GUI_SHOW)
 				Case 1
-					GUICtrlSetState($hInTitleLabel, $GUI_HIDE)
-					GUICtrlSetState($hInTitle, $GUI_HIDE)
-					GUICtrlSetState($hTitleUpDown, $GUI_HIDE)
-					GUICtrlSetState($hInVolumeLabel, $GUI_HIDE)
-					GUICtrlSetState($hInVolume, $GUI_HIDE)
-					GUICtrlSetState($hVolumeUpDown, $GUI_HIDE)
-					GUICtrlSetState($hOutLabel, $GUI_HIDE)
-					GUICtrlSetState($hOut, $GUI_HIDE)
-					GUICtrlSetState($hLoadFileButton, $GUI_HIDE)
-					ControlHide($hGUI, "", $hInRemarksList)
+					GUICtrlSetState($idInTitleLabel, $GUI_HIDE)
+					GUICtrlSetState($idInTitle, $GUI_HIDE)
+					GUICtrlSetState($idTitleUpDown, $GUI_HIDE)
+					GUICtrlSetState($idInVolumeLabel, $GUI_HIDE)
+					GUICtrlSetState($idInVolume, $GUI_HIDE)
+					GUICtrlSetState($idVolumeUpDown, $GUI_HIDE)
+					GUICtrlSetState($idOutLabel, $GUI_HIDE)
+					GUICtrlSetState($idOut, $GUI_HIDE)
+					GUICtrlSetState($idLoadFileButton, $GUI_HIDE)
+					ControlHide($hGUI, "", $idInRemarksList)
+					GUICtrlSetState($idCreateAllOutsButton, $GUI_HIDE)
 
-					GUICtrlSetState($defDir_label, $GUI_SHOW)
-					GUICtrlSetState($hInFolder, $GUI_SHOW)
-					GUICtrlSetState($efFileLoc_label, $GUI_SHOW)
-					GUICtrlSetState($hOutFile, $GUI_SHOW)
-					GUICtrlSetState($hDefault_Button, $GUI_SHOW)
-					GUICtrlSetState($hApply_Button, $GUI_SHOW)
+					GUICtrlSetState($id_defDir_label, $GUI_SHOW)
+					GUICtrlSetState($idInFolder, $GUI_SHOW)
+					GUICtrlSetState($idEfFileLoc_label, $GUI_SHOW)
+					GUICtrlSetState($idOutFile, $GUI_SHOW)
+					GUICtrlSetState($idDefault_Button, $GUI_SHOW)
+					GUICtrlSetState($idApply_Button, $GUI_SHOW)
 			EndSwitch
 		EndIf
 	WEnd
@@ -232,43 +234,81 @@ Func _GetVersion()
 EndFunc   ;==>_GetVersion
 
 Func fuLoadFile()
-	GUICtrlSetBkColor($hInTitle, $GUI_BKCOLOR_TRANSPARENT)
-	GUICtrlSetBkColor($hInVolume, $GUI_BKCOLOR_TRANSPARENT)
-	_GUICtrlRichEdit_SetText($hInRemarksList, "")
+	GUICtrlSetBkColor($idInTitle, $GUI_BKCOLOR_TRANSPARENT)
+	GUICtrlSetBkColor($idInVolume, $GUI_BKCOLOR_TRANSPARENT)
+	_GUICtrlRichEdit_SetText($idInRemarksList, "")
 
-	Local $iTitleNum = GUICtrlRead($hInTitle)
-	Local $iVolumeNum = GUICtrlRead($hInVolume)
+	Local $iTitleNum = GUICtrlRead($idInTitle)
+	Local $iVolumeNum = GUICtrlRead($idInVolume)
 	If $iTitleNum < 1 Or $iTitleNum > 50 Then
-		GUICtrlSetBkColor($hInTitle, $COLOR_RED)
+		GUICtrlSetBkColor($idInTitle, $COLOR_RED)
 		MsgBox($MB_ICONERROR, "Title Number Out of Range", "Title Number Should Be Between 1 and 50 !!!")
 		Return 0
 	EndIf
 	If $iVolumeNum < 1 Or $iVolumeNum > 37 Then
-		GUICtrlSetBkColor($hInVolume, $COLOR_RED)
+		GUICtrlSetBkColor($idInVolume, $COLOR_RED)
 		MsgBox($MB_ICONERROR, "Volume Number Out of Range", "Volume Number Should Be Between 1 and 37 !!!")
 		Return 0
 	EndIf
 
 	Local $aEffDate = FileGetTime($sOutFileDir, $FT_MODIFIED)
-	GUICtrlSetData($hOut, $aEffDate[0] & "/" & $aEffDate[1] & "/" & $aEffDate[2])
+	GUICtrlSetData($idOut, $aEffDate[0] & "/" & $aEffDate[1] & "/" & $aEffDate[2])
 
-	Local $sFilePath = $sInFileDir & '\' & Number($iTitleNum) & '\' & Number($iTitleNum) & 'V' & Number($iVolumeNum) & ".TXT"
+	Local $sFilePath = $sInFileDir & '\' & $iTitleNum & '\' & $iTitleNum & 'V' & $iVolumeNum & ".TXT"
 	If FileExists($sFilePath) Then
 		Local $hFileOpen = FileOpen($sFilePath, $FO_READ)
 		Local $sFileRead = FileRead($hFileOpen)
 		FileClose($hFileOpen)
-		ControlHide($hGUI, "", $hInRemarksList)
-		_GUICtrlRichEdit_SetText($hInRemarksList, $sFileRead)
-		ControlShow($hGUI, "", $hInRemarksList)
+		ControlHide($hGUI, "", $idInRemarksList)
+		_GUICtrlRichEdit_SetText($idInRemarksList, $sFileRead)
+		ControlShow($hGUI, "", $idInRemarksList)
 
-		_GUICtrlRichEdit_SetSel($hInRemarksList, _GUICtrlRichEdit_FindText($hInRemarksList, "<AMDDATE>") + 9, _GUICtrlRichEdit_FindText($hInRemarksList, "<FMTR>") - 1)
-		_GUICtrlRichEdit_SetCharBkColor($hInRemarksList, Dec('8888FF'))
-		_GUICtrlRichEdit_SetSel($hInRemarksList, _GUICtrlRichEdit_FindText($hInRemarksList, "<TITLENUM>") + 10, _GUICtrlRichEdit_FindText($hInRemarksList, "<SUBJECT>") - 1)
-		_GUICtrlRichEdit_SetCharBkColor($hInRemarksList, Dec('8888FF'))
-		_GUICtrlRichEdit_Deselect($hInRemarksList)
+		_GUICtrlRichEdit_SetSel($idInRemarksList, _GUICtrlRichEdit_FindText($idInRemarksList, "<AMDDATE>") + 9, _GUICtrlRichEdit_FindText($idInRemarksList, "<FMTR>") - 1)
+		_GUICtrlRichEdit_SetCharBkColor($idInRemarksList, Dec('8888FF'))
+		_GUICtrlRichEdit_SetSel($idInRemarksList, _GUICtrlRichEdit_FindText($idInRemarksList, "<TITLENUM>") + 10, _GUICtrlRichEdit_FindText($idInRemarksList, "<SUBJECT>") - 1)
+		_GUICtrlRichEdit_SetCharBkColor($idInRemarksList, Dec('8888FF'))
+		_GUICtrlRichEdit_Deselect($idInRemarksList)
 		Return 1
 	Else
 		MsgBox($MB_ICONERROR, "Error Reading File", "Selected Title/Volume File is Not Ready for Parsing!")
 		Return 0
 	EndIf
 EndFunc   ;==>fuLoadFile
+
+Func fuProcessFiles()
+	Local $sNoExtFile, $sDocFile, $sTxtFile, $bNoExtFileStatus = "Fail", $bDocFileStatus = "Fail", $bTxtFileStatus = "Fail"
+	Local $iTitleNum = GUICtrlRead($idInTitle)
+	Local $iVolumeNum = GUICtrlRead($idInVolume)
+	Local $contEffDate = StringSplit(GUICtrlRead($idOut), "/")
+	Local $sHoldingFileName = $sInFileDir & '\Holding\' & StringFormat("%02d", $iTitleNum) & StringFormat("%02d", $iVolumeNum) & StringFormat("%02d", $contEffDate[1]) & StringFormat("%02d", $contEffDate[2]) & "." & StringRight($contEffDate[3], 3)
+	Local $sXttDir = $sInFileDir & '\' & $iTitleNum & '\x' & $iTitleNum & "\"
+	Local $aDfltEffDate = FileGetTime($sOutFileDir, $FT_MODIFIED)
+
+	$sNoExtFile = $sInFileDir & '\' & $iTitleNum & '\' & $iTitleNum & 'V' & $iVolumeNum
+	$sDocFile = $sInFileDir & '\' & $iTitleNum & '\' & $iTitleNum & 'V' & $iVolumeNum & ".doc"
+	$sTxtFile = $sInFileDir & '\' & $iTitleNum & '\' & $iTitleNum & 'V' & $iVolumeNum & ".TXT"
+
+;~ 	No extension file is deleted
+	If FileDelete($sNoExtFile) Then
+		$bNoExtFileStatus = "OK"
+	EndIf
+
+;~ 	TXT file is stripped off of extension and copied to /Holding/ directory with ttvvmmdd.0yy filename
+	If FileMove($sTxtFile, $sNoExtFile, $FC_OVERWRITE) And FileCopy($sNoExtFile, $sHoldingFileName, $FC_OVERWRITE) Then
+		$bTxtFileStatus = "OK"
+	EndIf
+
+;~ 	Move DOC file to xTT directory and copy /Holding/ dir version of the file there as well
+	If FileMove($sDocFile, $sXttDir & StringFormat("%02d", $iTitleNum) & StringFormat("%02d", $iVolumeNum) & StringFormat("%02d", $contEffDate[1]) & StringFormat("%02d", $contEffDate[2]) & ".doc", $FC_OVERWRITE) And FileCopy($sHoldingFileName, $sXttDir, $FC_OVERWRITE) Then
+		$bDocFileStatus = "OK"
+	EndIf
+
+	GUICtrlSetData($idInVolume, "1")
+	GUICtrlSetData($idInTitle, "1")
+	GUICtrlSetData($idOut, $aDfltEffDate[0] & "/" & $aDfltEffDate[1] & "/" & $aDfltEffDate[2])
+	_GUICtrlRichEdit_SetText($idInRemarksList, "")
+	MsgBox($MB_ICONINFORMATION + $MB_OK, "File Operations Status", "No Ext File: " & $bNoExtFileStatus & @CRLF & "TXT File: " & $bTxtFileStatus & @CRLF & "Doc File: " & $bDocFileStatus)
+
+	Return
+
+EndFunc   ;==>fuProcessFiles
