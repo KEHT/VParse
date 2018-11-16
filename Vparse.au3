@@ -1,9 +1,9 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Res_Description=Vparse application to process eCFR files
-#AutoIt3Wrapper_Res_Fileversion=0.0.1.3
+#AutoIt3Wrapper_Res_Fileversion=1.0.1.6
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=U.S. GPO
-#AutoIt3Wrapper_UseX64=y
+#AutoIt3Wrapper_UseX64=N
 #AutoIt3Wrapper_Res_Field=OriginalFilename|Vparse.exe
 #AutoIt3Wrapper_Res_ProductVersion=0.1
 #AutoIt3Wrapper_Res_Field=ProductName|Vparse
@@ -28,13 +28,14 @@
 
 Global $sInFileDirDefault = "\\hqnapdcm0734\OFR\e_cfr"
 Global $sOutFileDirDefault = "\\hqnapdcm0734\OFR\e_cfr\Apps\ECFRDATE"
+Global $iMaxVolNumDefault = 37
 
-Global $sInFileDir, $sOutFileDir
+Global $sInFileDir, $sOutFileDir, $iMaxVolNum
 
 Global Const $COLOR_GPOTEAL = 0x3b80a1
 
 Dim $hGUI, $idTab, $idInFolder, $idInTitle, $idInTitleLabel, $idInVolume, $idInVolumeLabel, $idDefault_Button, $idApply_Button, $idLoadFileButton, $idInRemarksList, _
-		$idOutLabel, $idOut, $idOutFile, $idCreateAllOutsButton, $idTitleUpDown, $idVolumeUpDown, $id_defDir_label, $idEfFileLoc_label
+		$idOutLabel, $idOut, $idOutFile, $idCreateAllOutsButton, $idTitleUpDown, $idVolumeUpDown, $id_defDir_label, $idEfFileLoc_label, $idMaxVolume, $idMaxVolume_label
 
 fuMainGUI()
 ; create GUI and tabs
@@ -53,20 +54,20 @@ Func fuMainGUI()
 	GUISetFont(15, $FW_NORMAL)
 	$idInTitleLabel = GUICtrlCreateLabel("Title:", 17, 40)
 	GUICtrlSetBkColor($idInTitleLabel, $GUI_BKCOLOR_TRANSPARENT)
-	$idInTitle = GUICtrlCreateInput("1", 62, 37, 60, 33, BitOR($ES_NUMBER, $ES_CENTER))
+	$idInTitle = GUICtrlCreateInput("", 62, 37, 60, 33, BitOR($ES_NUMBER, $ES_CENTER))
 	$idTitleUpDown = GUICtrlCreateUpdown($idInTitle)
-	GUICtrlSetLimit(-1, 50, 1)
+	GUICtrlSetLimit($idTitleUpDown, 50, 1)
 
 	$idInVolumeLabel = GUICtrlCreateLabel("Volume:", 125, 40)
 	GUICtrlSetBkColor($idInVolumeLabel, $GUI_BKCOLOR_TRANSPARENT)
-	$idInVolume = GUICtrlCreateInput("1", 200, 37, 60, 33, BitOR($ES_NUMBER, $ES_CENTER))
+	$idInVolume = GUICtrlCreateInput("", 200, 37, 60, 33, BitOR($ES_NUMBER, $ES_CENTER))
 	$idVolumeUpDown = GUICtrlCreateUpdown($idInVolume)
-	GUICtrlSetLimit(-1, 37, 1)
 
 	$idOutLabel = GUICtrlCreateLabel("eCFR Date:", 270, 40)
 	GUICtrlSetBkColor($idOutLabel, $GUI_BKCOLOR_TRANSPARENT)
 	GUISetFont(15, $FW_BOLD)
-	$idOut = GUICtrlCreateDate("", 380, 37, 140, 33, $DTS_SHORTDATEFORMAT)
+	$idOut = GUICtrlCreateDate("1800/01/01", 380, 37, 140, 33, $DTS_SHORTDATEFORMAT)
+	GUICtrlSetState($idOut, $GUI_DISABLE)
 
 	$idLoadFileButton = GUICtrlCreateButton("LOAD", 550, 37, 80, 33)
 	GUICtrlSetBkColor($idLoadFileButton, $COLOR_GPOTEAL)
@@ -76,10 +77,12 @@ Func fuMainGUI()
 
 	$idInRemarksList = _GUICtrlRichEdit_Create($hGUI, "", 14, 80, 623, 475, BitOR($ES_MULTILINE, $WS_VSCROLL, $WS_HSCROLL))
 
-	$idCreateAllOutsButton = GUICtrlCreateButton("PROCESS FILES", 270, 565, 120, 22)
+	GUISetFont(15, $FW_BOLD)
+	$idCreateAllOutsButton = GUICtrlCreateButton("PROCESS FILES", 230, 557, 200, 33)
 	GUICtrlSetBkColor($idCreateAllOutsButton, $COLOR_GPOTEAL)
 	GUICtrlSetColor($idCreateAllOutsButton, $COLOR_WHITE)
 	GUICtrlSetState($idCreateAllOutsButton, $GUI_DISABLE)
+	GUISetFont(8.5, $FW_NORMAL)
 
 	; tab 1
 
@@ -87,14 +90,21 @@ Func fuMainGUI()
 	GUICtrlSetBkColor($id_defDir_label, $GUI_BKCOLOR_TRANSPARENT)
 
 	$idInFolder = GUICtrlCreateInput("", 35, 65, 320, 20)
-	$sInFileDir = fuGetRegValsForSettings("Dir", $sInFileDirDefault)
+	$sInFileDir = fuGetRegValsForSettings("Dir", $sInFileDirDefault, "REG_SZ")
 	GUICtrlSetData($idInFolder, $sInFileDir)
 
 	$idEfFileLoc_label = GUICtrlCreateLabel("Effective Date File Location", 35, 105)
 	GUICtrlSetBkColor($idEfFileLoc_label, $GUI_BKCOLOR_TRANSPARENT)
 	$idOutFile = GUICtrlCreateInput("", 35, 125, 320, 20)
-	$sOutFileDir = fuGetRegValsForSettings("Date", $sOutFileDirDefault)
+	$sOutFileDir = fuGetRegValsForSettings("Date", $sOutFileDirDefault, "REG_SZ")
 	GUICtrlSetData($idOutFile, $sOutFileDir)
+
+	$idMaxVolume_label = GUICtrlCreateLabel("Largest Volume Number", 35, 165)
+	GUICtrlSetBkColor($idMaxVolume_label, $GUI_BKCOLOR_TRANSPARENT)
+	$idMaxVolume = GUICtrlCreateInput("", 35, 185, 20, 20)
+	$iMaxVolNum = fuGetRegValsForSettings("Max_Volume", $iMaxVolNumDefault, "REG_DWORD")
+	GUICtrlSetData($idMaxVolume, $iMaxVolNum)
+	GUICtrlSetLimit($idVolumeUpDown, $iMaxVolNum, 1)
 
 	$idDefault_Button = GUICtrlCreateButton("Default", 400, 225, 75)
 	GUICtrlSetBkColor($idDefault_Button, $COLOR_GPOTEAL)
@@ -107,7 +117,9 @@ Func fuMainGUI()
 	GUICtrlSetState($id_defDir_label, $GUI_HIDE)
 	GUICtrlSetState($idInFolder, $GUI_HIDE)
 	GUICtrlSetState($idEfFileLoc_label, $GUI_HIDE)
+	GUICtrlSetState($idMaxVolume_label, $GUI_HIDE)
 	GUICtrlSetState($idOutFile, $GUI_HIDE)
+	GUICtrlSetState($idMaxVolume, $GUI_HIDE)
 	GUICtrlSetState($idDefault_Button, $GUI_HIDE)
 	GUICtrlSetState($idApply_Button, $GUI_HIDE)
 
@@ -126,6 +138,7 @@ Func fuMainGUI()
 			Case $idLoadFileButton
 				If fuLoadFile() > 0 Then
 					GUICtrlSetState($idCreateAllOutsButton, $GUI_ENABLE)
+					GUICtrlSetState($idOut, $GUI_ENABLE)
 				EndIf
 
 			Case $idDefault_Button
@@ -133,11 +146,15 @@ Func fuMainGUI()
 				GUICtrlSetData($idInFolder, $sInFileDir)
 				$sOutFileDir = $sOutFileDirDefault
 				GUICtrlSetData($idOutFile, $sOutFileDir)
+				$iMaxVolNum = $iMaxVolNumDefault
+				GUICtrlSetData($idMaxVolume, $iMaxVolNum)
 				ContinueCase
 
 			Case $idApply_Button
-				fuApplySettingsValue($idInFolder, "Dir")
-				fuApplySettingsValue($idOutFile, "Date")
+				fuApplySettingsValue($idInFolder, "Dir", "REG_SZ")
+				fuApplySettingsValue($idOutFile, "Date", "REG_SZ")
+				fuApplySettingsValue($idMaxVolume, "Max_Volume", "REG_DWORD")
+				GUICtrlSetLimit($idVolumeUpDown, GUICtrlRead($idMaxVolume), 1)
 
 			Case $idCreateAllOutsButton
 				fuProcessFiles()
@@ -155,7 +172,9 @@ Func fuMainGUI()
 					GUICtrlSetState($id_defDir_label, $GUI_HIDE)
 					GUICtrlSetState($idInFolder, $GUI_HIDE)
 					GUICtrlSetState($idEfFileLoc_label, $GUI_HIDE)
+					GUICtrlSetState($idMaxVolume_label, $GUI_HIDE)
 					GUICtrlSetState($idOutFile, $GUI_HIDE)
+					GUICtrlSetState($idMaxVolume, $GUI_HIDE)
 					GUICtrlSetState($idDefault_Button, $GUI_HIDE)
 					GUICtrlSetState($idApply_Button, $GUI_HIDE)
 
@@ -186,7 +205,9 @@ Func fuMainGUI()
 					GUICtrlSetState($id_defDir_label, $GUI_SHOW)
 					GUICtrlSetState($idInFolder, $GUI_SHOW)
 					GUICtrlSetState($idEfFileLoc_label, $GUI_SHOW)
+					GUICtrlSetState($idMaxVolume_label, $GUI_SHOW)
 					GUICtrlSetState($idOutFile, $GUI_SHOW)
+					GUICtrlSetState($idMaxVolume, $GUI_SHOW)
 					GUICtrlSetState($idDefault_Button, $GUI_SHOW)
 					GUICtrlSetState($idApply_Button, $GUI_SHOW)
 			EndSwitch
@@ -195,13 +216,13 @@ Func fuMainGUI()
 EndFunc   ;==>fuMainGUI
 
 ; function to get input or output values from registry if they exist
-Func fuGetRegValsForSettings($sFolder, $DefaultFolder)
+Func fuGetRegValsForSettings($sFolder, $DefaultFolder, $sRegValType)
 
 	Local $sRegValue
 
 	$sRegValue = RegRead("HKEY_CURRENT_USER\Software\USGPO\PED\Vparse", $sFolder)
 	If $sRegValue = "" Then
-		RegWrite("HKEY_CURRENT_USER\Software\USGPO\PED\Vparse", $sFolder, "REG_SZ", $DefaultFolder)
+		RegWrite("HKEY_CURRENT_USER\Software\USGPO\PED\Vparse", $sFolder, $sRegValType, $DefaultFolder)
 		Return $DefaultFolder
 	Else
 		Return $sRegValue
@@ -209,14 +230,14 @@ Func fuGetRegValsForSettings($sFolder, $DefaultFolder)
 
 EndFunc   ;==>fuGetRegValsForSettings
 
-Func fuApplySettingsValue($hGUI, $sFolder)
+Func fuApplySettingsValue($hGUI, $sFolder, $sRegValType)
 	Local $cInputVal = GUICtrlRead($hGUI)
 	$cInputVal = StringRegExpReplace($cInputVal, '\\* *$', '') ; strip trailing \ and spaces
-	If Not FileExists($cInputVal) Then
-		MsgBox(16, "Location invalid", $sFolder & " location does not exists. Enter a valid path to it.")
+	If Not FileExists($cInputVal) And $sRegValType = "REG_SZ" Then
+		MsgBox(16, "Location invalid", $sFolder & " location is not accessible. Enter a valid path to it.")
 	Else
-		If Not RegWrite("HKEY_CURRENT_USER\Software\USGPO\PED\Vparse", $sFolder, "REG_SZ", $cInputVal) Then
-			MsgBox(16, "Could not be saved", $sFolder & " location could not be saved, Error #" & @error)
+		If Not RegWrite("HKEY_CURRENT_USER\Software\USGPO\PED\Vparse", $sFolder, $sRegValType, $cInputVal) Then
+			MsgBox(16, "Could not be saved", $sFolder & " location could not be saved in registry, Error #" & @error)
 		EndIf
 	EndIf
 	GUICtrlSetData($hGUI, $cInputVal)
@@ -245,7 +266,7 @@ Func fuLoadFile()
 	EndIf
 	If $iVolumeNum < 1 Or $iVolumeNum > 37 Then
 		GUICtrlSetBkColor($idInVolume, $COLOR_RED)
-		MsgBox($MB_ICONERROR, "Volume Number Out of Range", "Volume Number Should Be Between 1 and 37 !!!")
+		MsgBox($MB_ICONERROR, "Volume Number Out of Range", "Volume Number Should Be Between 1 and " & $iMaxVolNum & " !!!")
 		Return 0
 	EndIf
 
@@ -280,35 +301,62 @@ Func fuProcessFiles()
 	Local $contEffDate = StringSplit(GUICtrlRead($idOut), "/")
 	Local $sHoldingFileName = $sInFileDir & '\Holding\' & StringFormat("%02d", $iTitleNum) & StringFormat("%02d", $iVolumeNum) & StringFormat("%02d", $contEffDate[1]) & StringFormat("%02d", $contEffDate[2]) & "." & StringRight($contEffDate[3], 3)
 	Local $sXttDir = $sInFileDir & '\' & $iTitleNum & '\x' & $iTitleNum & "\"
-	Local $aDfltEffDate = FileGetTime($sOutFileDir, $FT_MODIFIED)
 
 	$sNoExtFile = $sInFileDir & '\' & $iTitleNum & '\' & $iTitleNum & 'V' & $iVolumeNum
 	$sDocFile = $sInFileDir & '\' & $iTitleNum & '\' & $iTitleNum & 'V' & $iVolumeNum & ".doc"
 	$sTxtFile = $sInFileDir & '\' & $iTitleNum & '\' & $iTitleNum & 'V' & $iVolumeNum & ".TXT"
+
+	;Test if any of the files are opened by other app
+	If _FileIsUses($sNoExtFile) > 0 Or _FileIsUses($sDocFile) > 0 Or _FileIsUses($sTxtFile) > 0 Then
+		MsgBox($MB_ICONERROR, "Files Locked", "Some files are locked by other applications!!! Please close all apps that use these files and restart application!!!")
+		Return 0
+	EndIf
 
 ;~ 	No extension file is deleted
 	If FileDelete($sNoExtFile) Then
 		$bNoExtFileStatus = "OK"
 	EndIf
 
+
 ;~ 	TXT file is stripped off of extension and copied to /Holding/ directory with ttvvmmdd.0yy filename
-	If FileMove($sTxtFile, $sNoExtFile, $FC_OVERWRITE) And FileCopy($sNoExtFile, $sHoldingFileName, $FC_OVERWRITE) Then
+	If Not _FileIsUses($sTxtFile) And FileMove($sTxtFile, $sNoExtFile, $FC_OVERWRITE) And FileCopy($sNoExtFile, $sHoldingFileName, $FC_OVERWRITE) Then
 		$bTxtFileStatus = "OK"
 	EndIf
 
 ;~ 	Move DOC file to xTT directory and copy /Holding/ dir version of the file there as well
-	If FileMove($sDocFile, $sXttDir & StringFormat("%02d", $iTitleNum) & StringFormat("%02d", $iVolumeNum) & StringFormat("%02d", $contEffDate[1]) & StringFormat("%02d", $contEffDate[2]) & ".doc", $FC_OVERWRITE) And FileCopy($sHoldingFileName, $sXttDir, $FC_OVERWRITE) Then
+	If Not _FileIsUses($sDocFile) And FileMove($sDocFile, $sXttDir & StringFormat("%02d", $iTitleNum) & StringFormat("%02d", $iVolumeNum) & StringFormat("%02d", $contEffDate[1]) & StringFormat("%02d", $contEffDate[2]) & ".doc", $FC_OVERWRITE) And FileCopy($sHoldingFileName, $sXttDir, $FC_OVERWRITE) Then
 		$bDocFileStatus = "OK"
 	EndIf
 
-	GUICtrlSetData($idInVolume, "1")
-	GUICtrlSetData($idInTitle, "1")
-	GUICtrlSetData($idOut, $aDfltEffDate[0] & "/" & $aDfltEffDate[1] & "/" & $aDfltEffDate[2])
+	GUICtrlSetData($idInVolume, "")
+	GUICtrlSetData($idInTitle, "")
+	GUICtrlSetData($idOut, "1800/01/01/")
 	ControlHide($hGUI, "", $idInRemarksList)
 	_GUICtrlRichEdit_SetText($idInRemarksList, "")
 	ControlShow($hGUI, "", $idInRemarksList)
+	GUICtrlSetState($idCreateAllOutsButton, $GUI_DISABLE)
+	GUICtrlSetState($idOut, $GUI_DISABLE)
 	MsgBox($MB_ICONINFORMATION + $MB_OK, "File Operations Status", "No Ext File: " & $bNoExtFileStatus & @CRLF & "TXT File: " & $bTxtFileStatus & @CRLF & "Doc File: " & $bDocFileStatus)
 
 	Return 1
 
 EndFunc   ;==>fuProcessFiles
+
+Func _FileIsUses($sFile)
+
+	Local $hFile = _WinAPI_CreateFile($sFile, 2, 2, 0)
+
+	If $hFile Then
+		_WinAPI_CloseHandle($hFile)
+		Return 0
+	EndIf
+
+	Local $Error = _WinAPI_GetLastError()
+
+	Switch $Error
+		Case 32 ; ERROR_SHARING_VIOLATION
+			Return 1
+		Case Else
+			Return SetError($Error, 0, 0)
+	EndSwitch
+EndFunc   ;==>_FileIsUses
