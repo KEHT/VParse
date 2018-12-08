@@ -1,9 +1,9 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Res_Description=Vparse application to process eCFR files
-#AutoIt3Wrapper_Res_Fileversion=1.0.1.6
+#AutoIt3Wrapper_Res_Fileversion=1.0.1.8
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=U.S. GPO
-#AutoIt3Wrapper_UseX64=N
+#AutoIt3Wrapper_UseX64=Y
 #AutoIt3Wrapper_Res_Field=OriginalFilename|Vparse.exe
 #AutoIt3Wrapper_Res_ProductVersion=0.1
 #AutoIt3Wrapper_Res_Field=ProductName|Vparse
@@ -273,7 +273,7 @@ Func fuLoadFile()
 	Local $aEffDate = FileGetTime($sOutFileDir, $FT_MODIFIED)
 	GUICtrlSetData($idOut, $aEffDate[0] & "/" & $aEffDate[1] & "/" & $aEffDate[2])
 
-	Local $sFilePath = $sInFileDir & '\' & $iTitleNum & '\' & $iTitleNum & 'V' & $iVolumeNum & ".TXT"
+	Local $sFilePath = $sInFileDir & '\' & StringFormat("%02d", $iTitleNum) & '\' & $iTitleNum & 'V' & $iVolumeNum & ".TXT"
 	If FileExists($sFilePath) Then
 		Local $hFileOpen = FileOpen($sFilePath, $FO_READ)
 		Local $sFileRead = FileRead($hFileOpen)
@@ -300,11 +300,11 @@ Func fuProcessFiles()
 	Local $iVolumeNum = GUICtrlRead($idInVolume)
 	Local $contEffDate = StringSplit(GUICtrlRead($idOut), "/")
 	Local $sHoldingFileName = $sInFileDir & '\Holding\' & StringFormat("%02d", $iTitleNum) & StringFormat("%02d", $iVolumeNum) & StringFormat("%02d", $contEffDate[1]) & StringFormat("%02d", $contEffDate[2]) & "." & StringRight($contEffDate[3], 3)
-	Local $sXttDir = $sInFileDir & '\' & $iTitleNum & '\x' & $iTitleNum & "\"
+	Local $sXttDir = $sInFileDir & '\' & StringFormat("%02d", $iTitleNum) & '\x' & StringFormat("%02d", $iTitleNum) & "\"
 
-	$sNoExtFile = $sInFileDir & '\' & $iTitleNum & '\' & $iTitleNum & 'V' & $iVolumeNum
-	$sDocFile = $sInFileDir & '\' & $iTitleNum & '\' & $iTitleNum & 'V' & $iVolumeNum & ".doc"
-	$sTxtFile = $sInFileDir & '\' & $iTitleNum & '\' & $iTitleNum & 'V' & $iVolumeNum & ".TXT"
+	$sNoExtFile = $sInFileDir & '\' & StringFormat("%02d", $iTitleNum) & '\' & $iTitleNum & 'V' & $iVolumeNum
+	$sDocFile = $sInFileDir & '\' & StringFormat("%02d", $iTitleNum) & '\' & $iTitleNum & 'V' & $iVolumeNum & ".doc"
+	$sTxtFile = $sInFileDir & '\' & StringFormat("%02d", $iTitleNum) & '\' & $iTitleNum & 'V' & $iVolumeNum & ".TXT"
 
 	;Test if any of the files are opened by other app
 	If _FileIsUses($sNoExtFile) > 0 Or _FileIsUses($sDocFile) > 0 Or _FileIsUses($sTxtFile) > 0 Then
