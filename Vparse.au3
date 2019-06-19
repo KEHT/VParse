@@ -1,6 +1,6 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Res_Description=Vparse application to process eCFR files
-#AutoIt3Wrapper_Res_Fileversion=1.0.1.8
+#AutoIt3Wrapper_Res_Fileversion=1.1.0.2
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=U.S. GPO
 #AutoIt3Wrapper_UseX64=Y
@@ -29,13 +29,15 @@
 Global $sInFileDirDefault = "\\hqnapdcm0734\OFR\e_cfr"
 Global $sOutFileDirDefault = "\\hqnapdcm0734\OFR\e_cfr\Apps\ECFRDATE"
 Global $iMaxVolNumDefault = 37
+Global $sMSWordExtDefault = ".doc"
 
-Global $sInFileDir, $sOutFileDir, $iMaxVolNum
+Global $sInFileDir, $sOutFileDir, $iMaxVolNum, $sMSWordExt
 
 Global Const $COLOR_GPOTEAL = 0x3b80a1
 
 Dim $hGUI, $idTab, $idInFolder, $idInTitle, $idInTitleLabel, $idInVolume, $idInVolumeLabel, $idDefault_Button, $idApply_Button, $idLoadFileButton, $idInRemarksList, _
-		$idOutLabel, $idOut, $idOutFile, $idCreateAllOutsButton, $idTitleUpDown, $idVolumeUpDown, $id_defDir_label, $idEfFileLoc_label, $idMaxVolume, $idMaxVolume_label
+		$idOutLabel, $idOut, $idOutFile, $idCreateAllOutsButton, $idTitleUpDown, $idVolumeUpDown, $id_defDir_label, $idEfFileLoc_label, $idMaxVolume, $idMaxVolume_label, _
+		$idMSWordDOC_label, $idMSWordDOC
 
 fuMainGUI()
 ; create GUI and tabs
@@ -56,7 +58,7 @@ Func fuMainGUI()
 	GUICtrlSetBkColor($idInTitleLabel, $GUI_BKCOLOR_TRANSPARENT)
 	$idInTitle = GUICtrlCreateInput("", 62, 37, 60, 33, BitOR($ES_NUMBER, $ES_CENTER))
 	$idTitleUpDown = GUICtrlCreateUpdown($idInTitle)
-	GUICtrlSetLimit($idTitleUpDown, 50, 1)
+	GUICtrlSetLimit($idTitleUpDown, 50, 0)
 
 	$idInVolumeLabel = GUICtrlCreateLabel("Volume:", 125, 40)
 	GUICtrlSetBkColor($idInVolumeLabel, $GUI_BKCOLOR_TRANSPARENT)
@@ -88,7 +90,6 @@ Func fuMainGUI()
 
 	$id_defDir_label = GUICtrlCreateLabel("Default Directory", 35, 45)
 	GUICtrlSetBkColor($id_defDir_label, $GUI_BKCOLOR_TRANSPARENT)
-
 	$idInFolder = GUICtrlCreateInput("", 35, 65, 320, 20)
 	$sInFileDir = fuGetRegValsForSettings("Dir", $sInFileDirDefault, "REG_SZ")
 	GUICtrlSetData($idInFolder, $sInFileDir)
@@ -104,12 +105,18 @@ Func fuMainGUI()
 	$idMaxVolume = GUICtrlCreateInput("", 35, 185, 20, 20)
 	$iMaxVolNum = fuGetRegValsForSettings("Max_Volume", $iMaxVolNumDefault, "REG_DWORD")
 	GUICtrlSetData($idMaxVolume, $iMaxVolNum)
-	GUICtrlSetLimit($idVolumeUpDown, $iMaxVolNum, 1)
+	GUICtrlSetLimit($idVolumeUpDown, $iMaxVolNum, 0)
 
-	$idDefault_Button = GUICtrlCreateButton("Default", 400, 225, 75)
+	$idMSWordDOC_label = GUICtrlCreateLabel("MS Word File Extension", 35, 225)
+	GUICtrlSetBkColor($idMSWordDOC_label, $GUI_BKCOLOR_TRANSPARENT)
+	$idMSWordDOC = GUICtrlCreateInput("", 35, 245, 50, 20)
+	$sMSWordExt = fuGetRegValsForSettings("MSWordExt", $sMSWordExtDefault, "REG_MULTI_SZ")
+	GUICtrlSetData($idMSWordDOC, $sMSWordExt)
+
+	$idDefault_Button = GUICtrlCreateButton("Default", 400, 285, 75)
 	GUICtrlSetBkColor($idDefault_Button, $COLOR_GPOTEAL)
 	GUICtrlSetColor($idDefault_Button, $COLOR_WHITE)
-	$idApply_Button = GUICtrlCreateButton("Apply", 485, 225, 75)
+	$idApply_Button = GUICtrlCreateButton("Apply", 485, 285, 75)
 	GUICtrlSetBkColor($idApply_Button, $COLOR_GPOTEAL)
 	GUICtrlSetColor($idApply_Button, $COLOR_WHITE)
 	GUICtrlCreateTabItem("") ; end tabitem definition
@@ -120,9 +127,12 @@ Func fuMainGUI()
 	GUICtrlSetState($idMaxVolume_label, $GUI_HIDE)
 	GUICtrlSetState($idOutFile, $GUI_HIDE)
 	GUICtrlSetState($idMaxVolume, $GUI_HIDE)
+	GUICtrlSetState($idMSWordDOC_label, $GUI_HIDE)
+	GUICtrlSetState($idMSWordDOC, $GUI_HIDE)
 	GUICtrlSetState($idDefault_Button, $GUI_HIDE)
 	GUICtrlSetState($idApply_Button, $GUI_HIDE)
 
+	ControlFocus($hGUI, "", $idInTitle)
 	GUISetState()
 
 	; This is the current active tab
@@ -148,12 +158,21 @@ Func fuMainGUI()
 				GUICtrlSetData($idOutFile, $sOutFileDir)
 				$iMaxVolNum = $iMaxVolNumDefault
 				GUICtrlSetData($idMaxVolume, $iMaxVolNum)
+				$sMSWordExt = $sMSWordExtDefault
+				GUICtrlSetData($idMSWordDOC, $sMSWordExt)
 				ContinueCase
 
 			Case $idApply_Button
 				fuApplySettingsValue($idInFolder, "Dir", "REG_SZ")
 				fuApplySettingsValue($idOutFile, "Date", "REG_SZ")
 				fuApplySettingsValue($idMaxVolume, "Max_Volume", "REG_DWORD")
+				GUICtrlSetLimit($idVolumeUpDown, GUICtrlRead($idMaxVolume), 0)
+				fuApplySettingsValue($idMSWordDOC, "MSWordExt", "REG_MULTI_SZ")
+
+			Case $idTitleUpDown
+				GUICtrlSetLimit($idTitleUpDown, 50, 1)
+
+			Case $idVolumeUpDown
 				GUICtrlSetLimit($idVolumeUpDown, GUICtrlRead($idMaxVolume), 1)
 
 			Case $idCreateAllOutsButton
@@ -175,6 +194,8 @@ Func fuMainGUI()
 					GUICtrlSetState($idMaxVolume_label, $GUI_HIDE)
 					GUICtrlSetState($idOutFile, $GUI_HIDE)
 					GUICtrlSetState($idMaxVolume, $GUI_HIDE)
+					GUICtrlSetState($idMSWordDOC_label, $GUI_HIDE)
+					GUICtrlSetState($idMSWordDOC, $GUI_HIDE)
 					GUICtrlSetState($idDefault_Button, $GUI_HIDE)
 					GUICtrlSetState($idApply_Button, $GUI_HIDE)
 
@@ -208,6 +229,8 @@ Func fuMainGUI()
 					GUICtrlSetState($idMaxVolume_label, $GUI_SHOW)
 					GUICtrlSetState($idOutFile, $GUI_SHOW)
 					GUICtrlSetState($idMaxVolume, $GUI_SHOW)
+					GUICtrlSetState($idMSWordDOC_label, $GUI_SHOW)
+					GUICtrlSetState($idMSWordDOC, $GUI_SHOW)
 					GUICtrlSetState($idDefault_Button, $GUI_SHOW)
 					GUICtrlSetState($idApply_Button, $GUI_SHOW)
 			EndSwitch
@@ -302,8 +325,10 @@ Func fuProcessFiles()
 	Local $sHoldingFileName = $sInFileDir & '\Holding\' & StringFormat("%02d", $iTitleNum) & StringFormat("%02d", $iVolumeNum) & StringFormat("%02d", $contEffDate[1]) & StringFormat("%02d", $contEffDate[2]) & "." & StringRight($contEffDate[3], 3)
 	Local $sXttDir = $sInFileDir & '\' & StringFormat("%02d", $iTitleNum) & '\x' & StringFormat("%02d", $iTitleNum) & "\"
 
+	ProgressOn("", "", "Processing...", Default, Default, $DLG_NOTITLE)
+
 	$sNoExtFile = $sInFileDir & '\' & StringFormat("%02d", $iTitleNum) & '\' & $iTitleNum & 'V' & $iVolumeNum
-	$sDocFile = $sInFileDir & '\' & StringFormat("%02d", $iTitleNum) & '\' & $iTitleNum & 'V' & $iVolumeNum & ".doc"
+	$sDocFile = $sInFileDir & '\' & StringFormat("%02d", $iTitleNum) & '\' & $iTitleNum & 'V' & $iVolumeNum & GUICtrlRead($idMSWordDOC)
 	$sTxtFile = $sInFileDir & '\' & StringFormat("%02d", $iTitleNum) & '\' & $iTitleNum & 'V' & $iVolumeNum & ".TXT"
 
 	;Test if any of the files are opened by other app
@@ -312,21 +337,32 @@ Func fuProcessFiles()
 		Return 0
 	EndIf
 
+	ProgressSet(20)
+	Sleep(5)
+
 ;~ 	No extension file is deleted
 	If FileDelete($sNoExtFile) Then
 		$bNoExtFileStatus = "OK"
 	EndIf
 
+	ProgressSet(40)
+	Sleep(5)
 
 ;~ 	TXT file is stripped off of extension and copied to /Holding/ directory with ttvvmmdd.0yy filename
 	If Not _FileIsUses($sTxtFile) And FileMove($sTxtFile, $sNoExtFile, $FC_OVERWRITE) And FileCopy($sNoExtFile, $sHoldingFileName, $FC_OVERWRITE) Then
 		$bTxtFileStatus = "OK"
 	EndIf
 
+	ProgressSet(60)
+	Sleep(5)
+
 ;~ 	Move DOC file to xTT directory and copy /Holding/ dir version of the file there as well
-	If Not _FileIsUses($sDocFile) And FileMove($sDocFile, $sXttDir & StringFormat("%02d", $iTitleNum) & StringFormat("%02d", $iVolumeNum) & StringFormat("%02d", $contEffDate[1]) & StringFormat("%02d", $contEffDate[2]) & ".doc", $FC_OVERWRITE) And FileCopy($sHoldingFileName, $sXttDir, $FC_OVERWRITE) Then
+	If Not _FileIsUses($sDocFile) And FileMove($sDocFile, $sXttDir & StringFormat("%02d", $iTitleNum) & StringFormat("%02d", $iVolumeNum) & StringFormat("%02d", $contEffDate[1]) & StringFormat("%02d", $contEffDate[2]) & GUICtrlRead($idMSWordDOC), $FC_OVERWRITE) And FileCopy($sHoldingFileName, $sXttDir, $FC_OVERWRITE) Then
 		$bDocFileStatus = "OK"
 	EndIf
+
+	ProgressSet(80)
+	Sleep(5)
 
 	GUICtrlSetData($idInVolume, "")
 	GUICtrlSetData($idInTitle, "")
@@ -336,7 +372,13 @@ Func fuProcessFiles()
 	ControlShow($hGUI, "", $idInRemarksList)
 	GUICtrlSetState($idCreateAllOutsButton, $GUI_DISABLE)
 	GUICtrlSetState($idOut, $GUI_DISABLE)
-	MsgBox($MB_ICONINFORMATION + $MB_OK, "File Operations Status", "No Ext File: " & $bNoExtFileStatus & @CRLF & "TXT File: " & $bTxtFileStatus & @CRLF & "Doc File: " & $bDocFileStatus)
+	ProgressSet(100, "Done!")
+	Sleep(750)
+	ProgressOff()
+	Local $iButtonPressed = MsgBox($MB_ICONINFORMATION + $MB_OKCANCEL, "File Operations Status", "Volume File Updated: " & $bNoExtFileStatus & @CRLF & "Volume File to HOLDING: " & $bTxtFileStatus & @CRLF & "Volume File Archived: " & $bDocFileStatus)
+	If $iButtonPressed = $IDCANCEL Then
+		Exit
+	EndIf
 
 	Return 1
 
