@@ -1,6 +1,6 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Res_Description=Vparse application to process eCFR files
-#AutoIt3Wrapper_Res_Fileversion=1.1.0.2
+#AutoIt3Wrapper_Res_Fileversion=1.1.1.2
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=U.S. GPO
 #AutoIt3Wrapper_UseX64=Y
@@ -25,6 +25,7 @@
 #include <GuiRichEdit.au3>
 #include <GuiTab.au3>
 
+#include "ExtMsgBox.au3"
 
 Global $sInFileDirDefault = "\\hqnapdcm0734\OFR\e_cfr"
 Global $sOutFileDirDefault = "\\hqnapdcm0734\OFR\e_cfr\Apps\ECFRDATE"
@@ -318,7 +319,7 @@ Func fuLoadFile()
 EndFunc   ;==>fuLoadFile
 
 Func fuProcessFiles()
-	Local $sNoExtFile, $sDocFile, $sTxtFile, $bNoExtFileStatus = "Fail", $bDocFileStatus = "Fail", $bTxtFileStatus = "Fail"
+	Local $sNoExtFile, $sDocFile, $sTxtFile, $iButtonPressed, $bNoExtFileStatus = "Fail", $bDocFileStatus = "Fail", $bTxtFileStatus = "Fail"
 	Local $iTitleNum = GUICtrlRead($idInTitle)
 	Local $iVolumeNum = GUICtrlRead($idInVolume)
 	Local $contEffDate = StringSplit(GUICtrlRead($idOut), "/")
@@ -333,6 +334,7 @@ Func fuProcessFiles()
 
 	;Test if any of the files are opened by other app
 	If _FileIsUses($sNoExtFile) > 0 Or _FileIsUses($sDocFile) > 0 Or _FileIsUses($sTxtFile) > 0 Then
+		ProgressOff()
 		MsgBox($MB_ICONERROR, "Files Locked", "Some files are locked by other applications!!! Please close all apps that use these files and restart application!!!")
 		Return 0
 	EndIf
@@ -375,11 +377,21 @@ Func fuProcessFiles()
 	ProgressSet(100, "Done!")
 	Sleep(750)
 	ProgressOff()
-	Local $iButtonPressed = MsgBox($MB_ICONINFORMATION + $MB_OKCANCEL, "File Operations Status", "Volume File Updated: " & $bNoExtFileStatus & @CRLF & "Volume File to HOLDING: " & $bTxtFileStatus & @CRLF & "Volume File Archived: " & $bDocFileStatus)
+;~ 	Local $iButtonPressed = MsgBox($MB_ICONINFORMATION + $MB_OKCANCEL, "File Operations Status", "Volume File Updated: " & $bNoExtFileStatus & @CRLF & "Volume File to HOLDING: " & $bTxtFileStatus & @CRLF & "Volume Files Archived: " & $bDocFileStatus)
+	$sMsg = "Volume File Updated: " & $bNoExtFileStatus & @CRLF & "Volume File to HOLDING: " & $bTxtFileStatus & @CRLF & "Volume Files Archived: " & $bDocFileStatus
+
+	If $bNoExtFileStatus = "OK" And $bTxtFileStatus = "OK" And $bDocFileStatus = "OK" Then
+		_ExtMsgBoxSet(1, 2, 0x38761D, 0xFFFFFF, 10, "MS Sans Serif")
+		$iButtonPressed = _ExtMsgBox($EMB_ICONINFO, 1, "File Operations Succeeded", $sMsg, 0, $hGUI)
+	Else
+		_ExtMsgBoxSet(1, 2, 0xFF0000, Default, 10, "MS Sans Serif")
+		$iButtonPressed = _ExtMsgBox($EMB_ICONSTOP, 1, "File Operations Failed", $sMsg, 0, $hGUI)
+	EndIf
+
 	If $iButtonPressed = $IDCANCEL Then
 		Exit
 	EndIf
-
+	ControlFocus($hGUI, "", $idInTitle)
 	Return 1
 
 EndFunc   ;==>fuProcessFiles
